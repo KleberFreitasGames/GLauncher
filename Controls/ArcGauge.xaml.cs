@@ -26,6 +26,10 @@ public partial class ArcGauge : UserControl
         DependencyProperty.Register(nameof(IsTemperature), typeof(bool), typeof(ArcGauge),
             new PropertyMetadata(false));
 
+    public static readonly DependencyProperty MaxValueProperty =
+        DependencyProperty.Register(nameof(MaxValue), typeof(double), typeof(ArcGauge),
+            new PropertyMetadata(100.0));
+
     public double Value
     {
         get => (double)GetValue(ValueProperty);
@@ -48,6 +52,12 @@ public partial class ArcGauge : UserControl
     {
         get => (bool)GetValue(IsTemperatureProperty);
         set => SetValue(IsTemperatureProperty, value);
+    }
+
+    public double MaxValue
+    {
+        get => (double)GetValue(MaxValueProperty);
+        set => SetValue(MaxValueProperty, value);
     }
 
     public ArcGauge()
@@ -76,7 +86,7 @@ public partial class ArcGauge : UserControl
 
     private void AnimateToValue(double target)
     {
-        target = Math.Clamp(target, 0, 100);
+        target = Math.Clamp(target, 0, MaxValue);
         _currentAnimation?.Stop();
         var from = _currentValue;
         _currentValue = target;
@@ -86,14 +96,15 @@ public partial class ArcGauge : UserControl
         helper.Start();
     }
 
-    private void UpdateArc(double percent)
+    private void UpdateArc(double value)
     {
-        percent = Math.Clamp(percent, 0, 100);
+        value = Math.Clamp(value, 0, MaxValue);
+        var percent = (value / MaxValue) * 100.0;
 
         var suffix = IsTemperature ? "°C" : "%";
-        ValueText.Text = $"{percent:F0}{suffix}";
+        ValueText.Text = $"{value:F0}{suffix}";
 
-        var brush = GetGradientBrush(percent);
+        var brush = GetGradientBrush(value);
         ValuePath.Stroke = brush;
         GlowPath.Stroke = brush;
         ValueText.Foreground = brush;
@@ -127,24 +138,27 @@ public partial class ArcGauge : UserControl
         GlowArc.IsLargeArc = isLargeArc;
     }
 
-    private SolidColorBrush GetGradientBrush(double percent)
+    private SolidColorBrush GetGradientBrush(double value)
     {
         Color color;
         if (IsTemperature)
         {
-            color = percent switch
+            // Escala 0-100°C para cores
+            color = value switch
             {
-                <= 45 => Color.FromRgb(0, 200, 255),   // Cool blue
-                <= 65 => LerpColor(Color.FromRgb(0, 230, 118), Color.FromRgb(255, 235, 59), (percent - 45) / 20),
-                <= 80 => LerpColor(Color.FromRgb(255, 235, 59), Color.FromRgb(255, 100, 0), (percent - 65) / 15),
-                _ => LerpColor(Color.FromRgb(255, 100, 0), Color.FromRgb(255, 23, 68), (percent - 80) / 20),
+                <= 45 => Color.FromRgb(0, 200, 255),   // Azul frio
+                <= 65 => LerpColor(Color.FromRgb(0, 230, 118), Color.FromRgb(255, 235, 59), (value - 45) / 20),   // Verde→Amarelo
+                <= 80 => LerpColor(Color.FromRgb(255, 235, 59), Color.FromRgb(255, 100, 0), (value - 65) / 15),    // Amarelo→Laranja
+                _ => LerpColor(Color.FromRgb(255, 100, 0), Color.FromRgb(255, 23, 68), (value - 80) / 20),         // Laranja→Vermelho
             };
         }
         else
         {
+            // Escala 0-100% padrão
+            var percent = (value / MaxValue) * 100.0;
             color = percent switch
             {
-                <= 30 => LerpColor(Color.FromRgb(0, 230, 118), Color.FromRgb(0, 230, 118), 0),
+                <= 30 => Color.FromRgb(0, 230, 118),   // Verde
                 <= 60 => LerpColor(Color.FromRgb(0, 230, 118), Color.FromRgb(255, 235, 59), (percent - 30) / 30),
                 <= 85 => LerpColor(Color.FromRgb(255, 235, 59), Color.FromRgb(255, 100, 0), (percent - 60) / 25),
                 _ => LerpColor(Color.FromRgb(255, 100, 0), Color.FromRgb(255, 23, 68), (percent - 85) / 15),

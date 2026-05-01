@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Management;
 using System.Timers;
+using Microsoft.Win32;
 using LibreHardwareMonitor.Hardware;
 
 namespace GameLauncher.Services;
@@ -72,6 +73,8 @@ public sealed class HardwareMonitorService : IDisposable
             string cpuName = "", gpuName = "";
             float ramUsed = 0, ramAvailable = 0;
 
+            DebugLogger.Log("[HardwareMonitor] Iniciando coleta de métricas...");
+
             foreach (var hw in _computer.Hardware)
             {
                 hw.Update();
@@ -84,21 +87,50 @@ public sealed class HardwareMonitorService : IDisposable
                 {
                     case HardwareType.Cpu:
                         if (string.IsNullOrEmpty(cpuName)) cpuName = hw.Name;
+                        DebugLogger.Log($"[HardwareMonitor] CPU: {hw.Name}");
+
                         foreach (var sensor in allSensors)
                         {
-                            if (sensor.SensorType == SensorType.Load && sensor.Name.Contains("Total"))
-                                cpuUsage = sensor.Value ?? 0;
-                            if (sensor.SensorType == SensorType.Temperature && sensor.Name.Contains("Package"))
-                                cpuTemp = sensor.Value ?? 0;
-                        }
-                        if (cpuTemp == 0)
-                        {
-                            foreach (var sensor in GetAllSensors(hw))
+                            // Procura por sensores de temperatura reais
+                            if (sensor.SensorType == SensorType.Temperature && sensor.Value.HasValue && sensor.Value > 0)
                             {
-                                if (sensor.SensorType == SensorType.Temperature && sensor.Value > 0)
-                                { cpuTemp = sensor.Value ?? 0; break; }
+                                DebugLogger.Log($"[HardwareMonitor] ✓ Encontrado sensor Temperature: {sensor.Name} = {sensor.Value}°C");
+                                cpuTemp = sensor.Value.Value;
+                                break;
                             }
                         }
+
+                        // Fallback para AMD Ryzen: usar "CPU Core Max" que contém a temperatura real
+                        if (cpuTemp == 0)
+                        {
+                            foreach (var sensor in allSensors)
+                            {
+                                if (sensor.Name.Contains("Core Max") && sensor.Value.HasValue && sensor.Value > 0)
+                                {
+                                    DebugLogger.Log($"[HardwareMonitor] Fallback AMD: {sensor.Name} = {sensor.Value}°C");
+                                    cpuTemp = sensor.Value.Value;
+                                    break;
+                                }
+                            }
+                        }
+
+                        // Último fallback: qualquer Load > 20°C (para AMD)
+                        if (cpuTemp == 0)
+                        {
+                            foreach (var sensor in allSensors)
+                            {
+                                if (sensor.SensorType == SensorType.Load && 
+                                    (sensor.Name.Contains("Total") || sensor.Name.Contains("Package")) && 
+                                    sensor.Value.HasValue && sensor.Value > 20 && sensor.Value < 150)
+                                {
+                                    DebugLogger.Log($"[HardwareMonitor] Fallback Load: {sensor.Name} = {sensor.Value}°C");
+                                    cpuTemp = sensor.Value.Value;
+                                    break;
+                                }
+                            }
+                        }
+
+                        DebugLogger.Log($"[HardwareMonitor] CPU Temp Final (LibreHardwareMonitor): {cpuTemp}°C");
                         break;
 
                     case HardwareType.GpuNvidia:
@@ -149,19 +181,11 @@ public sealed class HardwareMonitorService : IDisposable
 
             if (cpuTemp == 0)
             {
-                try
-                {
-                    using var searcher = new ManagementObjectSearcher(@"root\WMI",
-                        "SELECT CurrentTemperature FROM MSAcpi_ThermalZoneTemperature");
-                    foreach (var obj in searcher.Get())
-                    {
-                        var kelvinTenths = Convert.ToSingle(obj["CurrentTemperature"]);
-                        var celsius = (kelvinTenths / 10f) - 273.15f;
-                        if (celsius is > 0 and < 150) { cpuTemp = celsius; break; }
-                    }
-                }
-                catch { }
+                DebugLogger.Log($"[HardwareMonitor] CPU Temp = 0, usando AdvancedTemperatureReader...");
+                cpuTemp = AdvancedTemperatureReader.GetCpuTemperatureAdvanced();
             }
+
+            DebugLogger.Log($"[HardwareMonitor] Resultado Final - CpuTemp={cpuTemp:F1}°C");
 
             var totalRam = ramUsed + ramAvailable;
             var ramText = totalRam > 0 ? $"{totalRam:F0} GB" : "";

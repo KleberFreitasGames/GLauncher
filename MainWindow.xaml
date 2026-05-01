@@ -1283,60 +1283,71 @@
                         <StackPanel>
 
                             <Grid Margin="0,0,0,10">
-                                <Image Source="{Binding DetailGame.LogoPath}" MaxHeight="100" MaxWidth="440"
-                                       HorizontalAlignment="Left" VerticalAlignment="Center"
-                                       RenderOptions.BitmapScalingMode="HighQuality"
-                                       Stretch="Uniform">
-                                    <Image.Style>
-                                        <Style TargetType="Image">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding DetailGame.LogoPath}" Value="{x:Null}">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding DetailGame.LogoPath}" Value="">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Image.Style>
-                                </Image>
-                                <TextBlock Text="{Binding DetailGame.DisplayName}" FontSize="32" FontWeight="Bold"
-                                           Foreground="White" TextWrapping="Wrap">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding DetailGame.LogoPath}" Value="{x:Null}">
-                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding DetailGame.LogoPath}" Value="">
-                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="155"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Atividade Recente" FontSize="13" Foreground="#778899"/>
+                                <TextBlock Grid.Column="1" Text="{Binding DetailGame.LastPlayedText}" FontSize="13" Foreground="#AABBCC"/>
                             </Grid>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                <TextBlock FontSize="16" FontWeight="SemiBold" Foreground="#AABBCC" Margin="0,0,20,0">
-                                    <Run Text="⏱" /><Run Text=" "/><Run Text="{Binding DetailGame.PlayTimeDisplay, Mode=OneWay}"/>
-                                </TextBlock>
-                                <TextBlock FontSize="16" FontWeight="SemiBold" Foreground="#AABBCC" Margin="0,0,20,0">
-                                    <Run Text="🎮" /><Run Text=" "/><Run Text="{Binding DetailGame.GenresDisplay, Mode=OneWay}"/>
-                                </TextBlock>
-                                <TextBlock FontSize="16" FontWeight="SemiBold" Foreground="#FFD700">
-                                    <Run Text="★" /><Run Text=" "/><Run Text="{Binding DetailGame.RatingDisplay, Mode=OneWay}"/>
-                                </TextBlock>
-                            </StackPanel>
-                            <TextBlock Text="{Binding DetailGame.SummaryDisplay}" FontSize="15" FontWeight="SemiBold" Foreground="#99AABB"
-                                       TextWrapping="Wrap" MaxHeight="100" TextTrimming="CharacterEllipsis"/>
-                            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
-                                <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#667788" Margin="0,0,24,0">
-                                    <Run Text="Última vez:" /><Run Text=" "/><Run Text="{Binding DetailGame.LastPlayedText, Mode=OneWay}"/>
-                                </TextBlock>
-                                <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#667788" Text="{Binding DetailGame.PlatformSource}"/>
-                            </StackPanel>
+                            <Grid Margin="0,0,0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="155"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Tempo de Jogo" FontSize="13" Foreground="#778899"/>
+                                <TextBlock Grid.Column="1" Text="{Binding DetailGame.PlayTimeDisplay}" FontSize="13" Foreground="#5599CC"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="155"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Local de instalação" FontSize="13" Foreground="#778899"/>
+                                <TextBlock Grid.Column="1" Text="{Binding DetailGame.InstallDirectory}" FontSize="13"
+                               Foreground="#5599CC" TextTrimming="CharacterEllipsis"
+                               ToolTip="{Binding DetailGame.InstallDirectory}"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="155"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Tamanho" FontSize="13" Foreground="#778899"/>
+                                <TextBlock Grid.Column="1" Text="{Binding DetailGame.InstallSizeDisplay}" FontSize="13" Foreground="#5599CC"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="155"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Plataforma" FontSize="13" Foreground="#778899"/>
+                                <TextBlock Grid.Column="1" Text="{Binding DetailGame.PlatformSource}" FontSize="13" Foreground="#5599CC"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="155"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Gênero" FontSize="13" Foreground="#778899"/>
+                                <TextBlock Grid.Column="1" Text="{Binding DetailGame.GenresDisplay}" FontSize="13" Foreground="#5599CC" TextWrapping="Wrap"/>
+                            </Grid>
+                            <Grid Margin="0,0,0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="155"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Rating IGDB" FontSize="13" Foreground="#778899"/>
+                                <TextBlock Grid.Column="1" Text="{Binding DetailGame.RatingDisplay}" FontSize="13" Foreground="#FFD700"/>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="155"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Lançamento" FontSize="13" Foreground="#778899"/>
+                                <TextBlock Grid.Column="1" Text="{Binding DetailGame.YearDisplay}" FontSize="13" Foreground="#5599CC"/>
+                            </Grid>
                         </StackPanel>
                     </Border>
 
@@ -1996,12 +2007,12 @@
                             <ScaleTransform ScaleX="0.85" ScaleY="0.85"/>
                         </ctrl:ArcGauge.LayoutTransform>
                     </ctrl:ArcGauge>
-                    <ctrl:ArcGauge Value="{Binding CpuTemp}" Label="CPU °C" IsTemperature="True" Margin="4,0">
+                    <ctrl:ArcGauge Value="{Binding CpuTemp}" Label="CPU °C" IsTemperature="True" MaxValue="120" Margin="4,0">
                         <ctrl:ArcGauge.LayoutTransform>
                             <ScaleTransform ScaleX="1.1" ScaleY="1.1"/>
                         </ctrl:ArcGauge.LayoutTransform>
                     </ctrl:ArcGauge>
-                    <ctrl:ArcGauge Value="{Binding GpuTemp}" Label="GPU °C" IsTemperature="True" Margin="4,0">
+                    <ctrl:ArcGauge Value="{Binding GpuTemp}" Label="GPU °C" IsTemperature="True" MaxValue="120" Margin="4,0">
                         <ctrl:ArcGauge.LayoutTransform>
                             <ScaleTransform ScaleX="1.1" ScaleY="1.1"/>
                         </ctrl:ArcGauge.LayoutTransform>
